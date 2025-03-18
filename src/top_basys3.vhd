@@ -70,7 +70,16 @@ end top_basys3;
 architecture top_basys3_arch of top_basys3 is 
 
 --Declare stoplight component here 
-
+    component stoplight_fsm is
+        port(
+            i_C     : in std_logic;
+            i_reset : in std_logic;
+            i_clk   : in std_logic;
+            o_R     : out std_logic;
+            o_Y     : out std_logic;
+            o_G     : out std_logic
+        );
+    end component;
 
 component clock_divider is
 	generic ( constant k_DIV : natural := 2	);
@@ -81,19 +90,43 @@ component clock_divider is
 end component clock_divider;
 
 	signal w_clk : std_logic;		--this wire provides the connection between o_clk and stoplight clk
-
+    signal w_reset  : std_logic;        -- reset signal for the stoplight FSM
+    signal w_C      : std_logic;        -- car present signal for the stoplight FSM
+    signal w_R      : std_logic;        -- red light output
+    signal w_Y      : std_logic;        -- yellow light output
+    signal w_G      : std_logic;
 begin
 	-- PORT MAPS ----------------------------------------
 	--Port map stoplight here based on the design provided
-
+    stoplight_inst : stoplight_fsm
+        port map (
+            i_C     => w_C,         -- car present signal
+            i_reset => w_reset,     -- reset signal
+            i_clk   => w_clk,       -- divided clock signal
+            o_R     => JA(2),       -- Red light to JA(2)
+            o_Y     => JA(1),       -- Yellow light to JA(1)
+            o_G     => JA(0)        -- Green light to JA(0)
+        );
 
 --Complete the clock_divider portmap below based on the design provided	
 	clkdiv_inst : clock_divider 		--instantiation of clock_divider to take 
         generic map ( k_DIV => 50000000 ) -- 1 Hz clock from 100 MHz
         port map (						  
-            i_clk   => 
-            i_reset => 
-            o_clk   => 
-        );    
+            i_clk   => clk,
+            i_reset => btnL,
+            o_clk   => w_clk
+        );
+
+    process (btnC)
+    begin
+        if (btnC = '1') then
+            w_reset <= '1'; -- Reset the stoplight FSM on btnC press
+        else
+            w_reset <= '0'; -- Clear reset when btnC is not pressed
+        end if;
+        
+        -- Car presence logic (example, can be modified based on your logic)
+        w_C <= sw(0); -- Assuming switch sw(0) indicates car presence
+    end process;
 	
 end top_basys3_arch;
