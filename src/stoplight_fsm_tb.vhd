@@ -116,7 +116,8 @@ begin
 		
 		-- red light
 		w_C <= '0'; wait for k_clk_period;
-          assert w_stoplight = "100" report "should be red when no car" severity failure;
+          -- assert w_light = "100" report "should be red when no car" severity failure;
+		  assert w_stoplight = "100" report "should be red when no car" severity failure;
 		-- car shows up at red light
         w_C <= '1'; wait for k_clk_period;
             assert w_stoplight = "001" report "should be green when car present" severity failure;
